@@ -15,7 +15,6 @@ model = genai.GenerativeModel("gemini-1.5-flash")
 # SQLite DB file
 DB_FILE = "data.db"
 
-
 # Get Gemini response for SQL generation
 def get_sql_from_prompt(user_input):
     prompt = f"""
@@ -34,8 +33,7 @@ def get_sql_from_prompt(user_input):
     A:
     """
     response = model.generate_content(prompt)
-    return response.text.strip().strip("``````").strip()
-
+    return response.text.strip().strip("```sql").strip("```").strip()
 
 # Execute SQL and return result
 def execute_sql(query, db_file=DB_FILE):
@@ -110,38 +108,74 @@ def main():
         </div>
         """, unsafe_allow_html=True)
 
-    elif selection == "Query Assistant":
-        st.markdown("<h1 style='color:#4CAF50;'>Query Assistant</h1>", unsafe_allow_html=True)
+    elif selection == "About":
+        st.markdown("<h1 style='color:#4CAF50;'>About IntelliSQL</h1>", unsafe_allow_html=True)
         
-        user_input = st.text_area("Enter your natural language query:", height=100)
+        st.markdown("""
+        <div style='padding:20px;'>
+            <h3 style='color:#4CAF50;'>Smart Database Interaction</h3>
+            <p style='color:#ffffff;'>IntelliSQL bridges the gap between natural language and database queries, making data access more intuitive than ever.</p>
+        </div>
+        """, unsafe_allow_html=True)
         
-        if st.button("Generate SQL"):
-            if user_input.strip():
-                with st.spinner("Generating SQL..."):
-                    try:
-                        generated_sql = get_sql_from_prompt(user_input)
-                        st.session_state.generated_sql = generated_sql
-                    except Exception as e:
-                        st.error(f"Failed to generate SQL: {str(e)}")
+        st.markdown("---")
         
-        if 'generated_sql' in st.session_state:
-            st.markdown("### Generated SQL")
-            st.code(st.session_state.generated_sql, language="sql")
-            
-            if st.button("Execute SQL"):
-                with st.spinner("Executing..."):
-                    rows, columns, error = execute_sql(st.session_state.generated_sql)
-                    
-                if error:
-                    st.error(error)
-                else:
-                    st.success("Query executed successfully!")
-                    if rows and columns:
-                        st.markdown("### Results")
-                        st.dataframe(rows, columns=columns)
+        st.markdown("""
+        <h3 style='color:#4CAF50;'>🔧 How It Works</h3>
+        <div style='padding:10px; border-left:4px solid #4CAF50;'>
+            <p style='color:#ffffff;'>The system uses Google's advanced Gemini AI model to understand your natural language requests 
+            and convert them into precise SQL queries. These queries are then executed on your local SQLite 
+            database, with results displayed in an easy-to-read format.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("---")
+        
+        st.markdown("""
+        <h3 style='color:#4CAF50;'>🛠️ Technology Stack</h3>
+        <div style='display:flex; justify-content:space-between; flex-wrap:wrap;'>
+            <div style='width:30%; padding:10px; margin:5px;'>
+                <h4 style='color:#4CAF50;'>Google Gemini</h4>
+                <p style='color:#ffffff;'>Advanced AI for natural language understanding</p>
+            </div>
+            <div style='width:30%; padding:10px; margin:5px;'>
+                <h4 style='color:#4CAF50;'>SQLite</h4>
+                <p style='color:#ffffff;'>Lightweight local database engine</p>
+            </div>
+            <div style='width:30%; padding:10px; margin:5px;'>
+                <h4 style='color:#4CAF50;'>Streamlit</h4>
+                <p style='color:#ffffff;'>Interactive web app framework</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("---")
+        
+        st.markdown("""
+        <div style='text-align:center; padding:20px;'>
+            <h4 style='color:#4CAF50;'>💡 Note</h4>
+            <p style='color:#ffffff;'>All database operations are performed locally on your machine. No data is sent to external servers except for the initial query conversion to Gemini.</p>
+        </div>
+        """, unsafe_allow_html=True)
 
+    elif selection == "Query Assistant":
+        st.markdown("<h1 style='color:#4CAF50;'>Intelligent Query Assistant</h1>", unsafe_allow_html=True)
+        user_input = st.text_input("🔍 Enter your instruction (e.g., 'Add new table EMPLOYEE')")
+
+        if st.button("Get Answer"):
+            with st.spinner("Generating SQL..."):
+                sql_query = get_sql_from_prompt(user_input)
+                st.code(sql_query, language="sql")
+                result, cols, msg = execute_sql(sql_query)
+
+                if result is not None and cols is not None:
+                    st.subheader("📊 Query Result:")
+                    st.table([dict(zip(cols, row)) for row in result])
+                elif msg:
+                    if "error" in msg.lower():
+                        st.error(str(msg))
+                    else:
+                        st.success(str(msg))
 
 if __name__ == "__main__":
     main()
-# Run the Streamlit app
-# To run the app, use the command: streamlit run app.py
