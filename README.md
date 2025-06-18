@@ -12,6 +12,10 @@ IntelliSQL is a smart and interactive web app that allows users to write natural
 
 ## 📸 Demo
 
+[Click here to watch the Demo Video](https://drive.google.com/file/d/1OhpBbhSnxUMTJ0hOnCSyFyMKzuw-Wt3o/view?usp=sharing)
+
+<br>
+
 ![Screenshot 2025-06-16 110439](https://github.com/user-attachments/assets/d268f35f-7fcb-4135-9c1a-9b85b35f38d3)
 
 
